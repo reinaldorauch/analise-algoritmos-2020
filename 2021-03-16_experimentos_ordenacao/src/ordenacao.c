@@ -1,7 +1,15 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
+#include <sys/time.h>
 #include <string.h>
+
+#define LINE_SIZE 80
+
+unsigned long long microtime() {
+  struct timeval time;
+  gettimeofday(&time, NULL);
+  return ((unsigned long long) time.tv_sec * 1000000) + time.tv_usec;
+}
 
 /*
  * Compara o tempo de execução da ordenação de n números com m dígitos cada
@@ -105,116 +113,140 @@ int comparador(const void * a, const void * b)
   else return 0;
 }
 
-// função para testar os algoritmos de ordenação
-void teste()
-{
-  char *v1[10] = { "3847121", "9585345", "0498413", "1134995", "2222222",
-		   "2222432", "3244232", "1123231", "6233213", "1923342"};
-  int v2[10];
-
-  print_v("Não Ordenado:", v1, 10);
-  ordenacaoDigital (v1, 10, 7);
-  print_v("Ordenado por ordenacaoDigital():", v1, 10);
-
-  for(int i=0; i<10; ++i)
-    v2[i] = atoi(v1[i]);
-
-  qsort(v2, 10, sizeof(int), comparador);
-  printf("Ordenado pelo qsort():\n");
-  for (int i=0; i<10; ++i)
-    printf("%d\n", v2[i]);
-}
 
 // ordena o vetor v com ordenacaoDital() e
 // imprime o tempo de execucao
-void ordena_por_digitos(char **v, int n, int m)
+unsigned long long ordena_por_digitos(char **v, int n, int m)
 {
-  clock_t t;
+  unsigned long long t;
   double tempo;
 
-  t = clock();
+  t = microtime();
   ordenacaoDigital (v, n, m);
-  t = clock() - t;
+  t = microtime() - t;
 
-  tempo = ((double)t)/CLOCKS_PER_SEC; // in seconds
-  printf("Tempo da ordenacaoDigital(): %f seg.\n", tempo);
+  return t;
 }
 
 // ordena o vetor v com o qsort() e
 // imprime o tempo de execucao
-void quicksort(long long *v, int n, int m)
+unsigned long long quicksort(long long *v, int n, int m)
 {
-  clock_t t;
+  unsigned long long t;
   double tempo;
 
-  t = clock();
+  t = microtime();
   qsort(v, n, sizeof(long long), comparador);
-  t = clock() - t;
+  t = microtime() - t;
 
-  tempo = ((double)t)/CLOCKS_PER_SEC; // in seconds
-  printf("Tempo do qsort():            %f seg.\n", tempo);
+  return t;
 }
 
-void insertion_sort(long long *v, int n) {
+void insertion_sort(long long *v, int n)
+{
+  int i = 0, j = 0;
+  long long key = 0;
 
+  for (i = 1; i < n; i++)
+  {
+    key = v[i];
+    j = i - 1;
+    while (j >= 0 && v[j] > key)
+    {
+      v[j + 1] = v[j];
+      j = j - 1;
+    }
+    v[j + 1] = key;
+  }
 }
 
-void insertion_sort_test(long long *v, int n) {
-  clock_t t;
-  double tempo;
+unsigned long long insertion_sort_test(long long *v, int n) {
+  unsigned long long t;
 
-  t = clock();
+  t = microtime();
   insertion_sort(v, n);
-  t = clock() - t;
+  t = microtime() - t;
 
-  tempo = ((double)t) / CLOCKS_PER_SEC; // in seconds
-  printf("Tempo do qsort():            %f seg.\n", tempo);
+  return t;
+}
+
+void run_test_for_n_m(int n, int m)
+{
+  // aloca um vetor de n strings de tamanho m cada para a ordenação digital
+  // e um vetor de n inteiros para executar o quicksort
+  char **v = malloc(n * sizeof(char *));
+  long long *vi = malloc(n * sizeof(long long));
+  long long *vi2 = malloc(n * sizeof(long long));
+
+  for (int i = 0; i < n; ++i)
+    v[i] = malloc((m + 1) * sizeof(char));
+
+  // gera n strings aleatórias formadas por m dígitos cada
+  strings_aleatorias(v, n, m);
+
+  // copia as strings como números para vi, usado no quicksort
+  for (int i = 0; i < n; ++i)
+  {
+    vi2[i] = vi[i] = atoll(v[i]);
+  }
+
+  printf(
+    "%d\t%d\t%llu\t%llu\t%llu\n",
+    n,
+    m,
+    // Testa o QuickSort
+    quicksort(vi, n, m),
+    // print_vi("qsort", vi, n);
+    // Ordenação Digital
+    ordena_por_digitos(v, n, m),
+    // print_v("digital", v, n);
+    // print_vi("before insertion sort", vi2, n);
+    insertion_sort_test(vi2, n)
+    // print_vi("after insertion sort", vi2, n);
+  );
+  fflush(stdout);
+
+  for(int i = 0; i < n; i++) {
+    free(v[i]);
+  }
+
+  free(v);
+  free(vi);
+  free(vi2);
 }
 
 int main(int argc, char *argv[])
 {
-  int n, m;
+  int n, m, times = 1;
+  unsigned int seed;
+
+  if (argc >=4) {
+    times = atoi(argv[3]);
+  }
+
   // recebe uma semente para o gerador aleatório
   // como primeiro parâmetro opcional
-  if (argc == 4) {
-    printf("seed = %u\n", atoi(argv[3]));
-    srand((unsigned) atoi(argv[3]));
+  if (argc == 5) {
+    seed = atoi(argv[5]);
+    printf("seed = %u\n", seed);
+    srand(seed);
   }
 
   if (argc >= 3) {
     n = atoi(argv[1]);
     m = atoi(argv[2]);
   } else {
-    printf("uso: ord-digital n m [seed]\n");
+    printf("uso: ord-digital n m [times] [seed]\n");
     exit(1);
   }
 
-  // aloca um vetor de n strings de tamanho m cada para a ordenação digital
-  // e um vetor de n inteiros para executar o quicksort
-  char **v = malloc (n * sizeof (char *));
-  long long *vi = malloc(n * sizeof(long long));
-  long long *vi2 = malloc(n * sizeof(long long));
+  printf("n\tm\tquicksort\tordenacao digital\tinsertion sort\n");
+  fflush(stdout);
 
-  for (int i=0; i<n; ++i)
-    v[i] = malloc( (m+1)*sizeof(char) );
-
-  // gera n strings aleatórias formadas por m dígitos cada
-  strings_aleatorias(v, n, m);
-
-  // copia as strings como números para vi, usado no quicksort
-  for (int i=0; i<n; ++i) {
-    vi2[i] = vi[i] = atoll(v[i]);
-  }
-
-  // Testa o QuickSort
-  quicksort(vi, n, m);
-  // print_vi("qsort", vi, n);
-
-  // Ordenação Digital
-  ordena_por_digitos(v, n, m);
-  // print_v("digital", v, n);
-
-  insertion_sort_test(vi2, n);
+  for (int j = 1; j <= n; j *= 10)
+    for (int k = 1; k <= m; k++)
+      for (int i = 0; i < times; i++)
+        run_test_for_n_m(j, k);
 
   return 0;
 }
