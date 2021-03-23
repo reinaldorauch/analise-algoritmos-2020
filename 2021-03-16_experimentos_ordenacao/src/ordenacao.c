@@ -2,10 +2,37 @@
 #include <stdio.h>
 #include <sys/time.h>
 #include <string.h>
+#include <pthread.h>
+#include <math.h>
+
+// DEFINITIONS
 
 #define LINE_SIZE 80
+#define MAX_THREADS 8
 
-unsigned long long microtime() {
+typedef struct
+{
+  int n;
+  int d;
+} t_exp_args;
+
+typedef struct
+{
+  int arity;
+  int total;
+} t_runner_args;
+
+// GLOBALS
+
+// Ponteiro para a lista de argumentos para os experimentos
+t_exp_args **experiment_args = NULL;
+
+/**
+ * Função que retorna o tempo unix atual em microsegundos inteiros
+ * @returns unsigned long long
+ */
+    unsigned long long microtime()
+{
   struct timeval time;
   gettimeofday(&time, NULL);
   return ((unsigned long long) time.tv_sec * 1000000) + time.tv_usec;
@@ -142,32 +169,72 @@ unsigned long long quicksort(long long *v, int n, int m)
   return t;
 }
 
-void insertion_sort(long long *v, int n)
+void merge(long long *vetor, int comeco, int meio, int fim)
 {
-  int i = 0, j = 0;
-  long long key = 0;
+  int com1 = comeco,
+      com2 = meio + 1,
+      comAux = 0,
+      tam = fim - comeco + 1;
+  long long *vetAux = malloc(tam * sizeof(long long));
 
-  for (i = 1; i < n; i++)
+  while (com1 <= meio && com2 <= fim)
   {
-    key = v[i];
-    j = i - 1;
-    while (j >= 0 && v[j] > key)
+    if (vetor[com1] < vetor[com2])
     {
-      v[j + 1] = v[j];
-      j = j - 1;
+      vetAux[comAux] = vetor[com1];
+      com1++;
     }
-    v[j + 1] = key;
+    else
+    {
+      vetAux[comAux] = vetor[com2];
+      com2++;
+    }
+    comAux++;
   }
+
+  while (com1 <= meio)
+  { //Caso ainda haja elementos na primeira metade
+    vetAux[comAux] = vetor[com1];
+    comAux++;
+    com1++;
+  }
+
+  while (com2 <= fim)
+  { //Caso ainda haja elementos na segunda metade
+    vetAux[comAux] = vetor[com2];
+    comAux++;
+    com2++;
+  }
+
+  for (comAux = comeco; comAux <= fim; comAux++)
+  { //Move os elementos de volta para o vetor original
+    vetor[comAux] = vetAux[comAux - comeco];
+  }
+
+  free(vetAux);
 }
 
-unsigned long long insertion_sort_test(long long *v, int n) {
-  unsigned long long t;
+/**
+ * Código do merge sort do link:
+ * https://pt.wikipedia.org/wiki/Merge_sort#C%C3%B3digo_em_C
+ * Acesso em 22/03/2021
+ */
+void merge_sort(long long *vetor, int comeco, int fim)
+{
+  if (comeco >= fim) return;
 
-  t = microtime();
-  insertion_sort(v, n);
-  t = microtime() - t;
+  int meio = (fim + comeco) / 2;
 
-  return t;
+  merge_sort(vetor, comeco, meio);
+  merge_sort(vetor, meio + 1, fim);
+  merge(vetor, comeco, meio, fim);
+}
+
+unsigned long long merge_sort_test(long long *vetor, int n) {
+  unsigned long long t = microtime();
+  // Argumento fim deve ser dentro do vetor
+  merge_sort(vetor, 0, n - 1);
+  return microtime() - t;
 }
 
 void run_test_for_n_m(int n, int m)
@@ -190,18 +257,23 @@ void run_test_for_n_m(int n, int m)
     vi2[i] = vi[i] = atoll(v[i]);
   }
 
+  unsigned long long
+    quicksort_time = quicksort(vi, n, m),
+    digisort_time = ordena_por_digitos(v, n, m),
+    mergesort_time = merge_sort_test(vi2, n);
+
   printf(
     "%d\t%d\t%llu\t%llu\t%llu\n",
     n,
     m,
     // Testa o QuickSort
-    quicksort(vi, n, m),
+    quicksort_time,
     // print_vi("qsort", vi, n);
     // Ordenação Digital
-    ordena_por_digitos(v, n, m),
+    digisort_time,
     // print_v("digital", v, n);
     // print_vi("before insertion sort", vi2, n);
-    insertion_sort_test(vi2, n)
+    mergesort_time
     // print_vi("after insertion sort", vi2, n);
   );
   fflush(stdout);
@@ -214,6 +286,48 @@ void run_test_for_n_m(int n, int m)
   free(vi);
   free(vi2);
 }
+
+void print_exp_arg(t_exp_args *arg)
+{
+  printf("ARG: n = %d, d = %d\n", arg->n, arg->d);
+}
+
+void experiment_runner(void *arg)
+{
+  t_runner_args *args = (t_runner_args *) arg;
+
+  for (int i = args->arity; i < args->total; i += MAX_THREADS)
+  {
+    run_test_for_n_m(experiment_args[i]->n, experiment_args[i]->d);
+  }
+
+  free(args);
+}
+
+
+/**
+ * Inicia as threads assumindo-se que a memória dos experimentos nunca
+ * será alterada por elas
+ */
+void init_threads(int size) {
+  pthread_t threads[MAX_THREADS];
+
+  t_runner_args *arg = NULL;
+
+  for(uint8_t i = 0; i < MAX_THREADS; i++) {
+    // Os argumentos serão desalocados na função da thread
+    arg = malloc(sizeof(t_runner_args));
+    arg->arity = i;
+    arg->total = size;
+
+    pthread_create(&threads[i], NULL, (void *) experiment_runner, arg);
+  }
+
+  for (uint8_t i = 0; i < MAX_THREADS; i++) {
+    pthread_join(threads[i], NULL);
+  }
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -243,10 +357,35 @@ int main(int argc, char *argv[])
   printf("n\tm\tquicksort\tordenacao digital\tinsertion sort\n");
   fflush(stdout);
 
+  // Calculando o número total de experimentos.
+  // Como pulamos de 1, 10, 100 então o número será de sqrt(n)
+  int size = 0;
   for (int j = 1; j <= n; j *= 10)
     for (int k = 1; k <= m; k++)
       for (int i = 0; i < times; i++)
-        run_test_for_n_m(j, k);
+        size++;
+
+  // Alocando espaço para os argumentos dos experimentos
+  experiment_args = malloc(size * sizeof(t_exp_args *));
+  for (int i = 0; i < size; i++)
+    experiment_args[i] = malloc(sizeof(t_exp_args));
+
+  // Inserindo os argumentos no array global
+  int counter = 0;
+  for (int j = 1; j <= n; j *= 10)
+    for (int k = 1; k <= m; k++)
+      for (int i = 0; i < times; i++) {
+        experiment_args[counter]->n = j;
+        experiment_args[counter]->d = k;
+        counter++;
+      }
+
+  // Iniciando os workers para trabalhar nos experimentos
+  init_threads(size);
+
+  for (int i = 0; i < size; i++)
+    free(experiment_args[i]);
+  free(experiment_args);
 
   return 0;
 }
