@@ -31,7 +31,7 @@ t_exp_args **experiment_args = NULL;
  * Função que retorna o tempo unix atual em microsegundos inteiros
  * @returns unsigned long long
  */
-    unsigned long long microtime()
+unsigned long long microtime()
 {
   struct timeval time;
   gettimeofday(&time, NULL);
@@ -57,33 +57,38 @@ t_exp_args **experiment_args = NULL;
 //        https://www.ime.usp.br/~pf/algoritmos/aulas/radix.html
 void ordenacaoDigital (char **v, int n, int W)
 {
-   int *fp;
-   char **aux;
-   fp = malloc ((11) * sizeof (int));
-   aux = malloc (n * sizeof (char *));
+  int *fp;
+  char **aux;
+  fp = malloc ((11) * sizeof (int));
+  aux = malloc (n * sizeof (char *));
 
-   for (int d = W-1; d >= 0; --d) {
-      int r;
+  for (int d = W-1; d >= 0; --d) {
+    int r;
 
-      // ordenacao por contagem pelo dígito de ordem d
-      for (r = 0; r <= 10; ++r)
-         fp[r] = 0;
-      for (int i = 0; i < n; ++i) {
-         r = v[i][d]-'0';
-         fp[r+1] += 1;
-      }
-      for (r = 1; r <= 10; ++r)
-         fp[r] += fp[r-1];
-      for (int i = 0; i < n; ++i) {
-         r = v[i][d]-'0';
-         aux[fp[r]] = v[i];
-         fp[r]++;
-      }
-      for (int i = 0; i < n; ++i)
-         v[i] = aux[i];
-   }
-   free (fp);
-   free (aux);
+    // ordenacao por contagem pelo dígito de ordem d
+    for (r = 0; r <= 10; ++r)
+      fp[r] = 0;
+
+    for (int i = 0; i < n; ++i) {
+      r = v[i][d]-'0';
+      fp[r+1] += 1;
+    }
+
+    for (r = 1; r <= 10; ++r)
+       fp[r] += fp[r-1];
+
+    for (int i = 0; i < n; ++i) {
+      r = v[i][d]-'0';
+      aux[fp[r]] = v[i];
+      fp[r]++;
+    }
+
+    for (int i = 0; i < n; ++i)
+      v[i] = aux[i];
+  }
+
+  free(fp);
+  free(aux);
 }
 
 // imprime o vetor de strings para testes
@@ -360,8 +365,8 @@ int main(int argc, char *argv[])
   // Calculando o número total de experimentos.
   // Como pulamos de 1, 10, 100 então o número será de sqrt(n)
   int size = 0;
-  for (int j = 1; j <= n; j *= 10)
-    for (int k = 1; k <= m; k++)
+  for (int j = 1; j <= n; j += 10)
+    for (int k = m; k <= m; k++)
       for (int i = 0; i < times; i++)
         size++;
 
@@ -372,8 +377,8 @@ int main(int argc, char *argv[])
 
   // Inserindo os argumentos no array global
   int counter = 0;
-  for (int j = 1; j <= n; j *= 10)
-    for (int k = 1; k <= m; k++)
+  for (int j = 1; j <= n; j += 10)
+    for (int k = m; k <= m; k++)
       for (int i = 0; i < times; i++) {
         experiment_args[counter]->n = j;
         experiment_args[counter]->d = k;

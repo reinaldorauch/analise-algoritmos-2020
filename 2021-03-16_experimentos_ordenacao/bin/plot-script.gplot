@@ -1,0 +1,2 @@
+set logscale x
+plot 'data_quicksort.dat' w yerrorbars, 'data_radixsort.dat' w yerrorbars, 'data_mergesort.dat' w yerrorbars
