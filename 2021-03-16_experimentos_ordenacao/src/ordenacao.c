@@ -8,7 +8,8 @@
 // DEFINITIONS
 
 #define LINE_SIZE 80
-#define MAX_THREADS 8
+#define MAX_THREADS 1
+#define N_STEP_INCREASE 100
 
 typedef struct
 {
@@ -365,8 +366,8 @@ int main(int argc, char *argv[])
   // Calculando o número total de experimentos.
   // Como pulamos de 1, 10, 100 então o número será de sqrt(n)
   int size = 0;
-  for (int j = 1; j <= n; j += 10)
-    for (int k = m; k <= m; k++)
+  for (int j = N_STEP_INCREASE; j <= n; j += N_STEP_INCREASE)
+    //for (int k = m; k <= m; k++)
       for (int i = 0; i < times; i++)
         size++;
 
@@ -377,11 +378,11 @@ int main(int argc, char *argv[])
 
   // Inserindo os argumentos no array global
   int counter = 0;
-  for (int j = 1; j <= n; j += 10)
-    for (int k = m; k <= m; k++)
+  for (int j = N_STEP_INCREASE; j <= n; j += N_STEP_INCREASE)
+    //for (int k = m; k <= m; k++)
       for (int i = 0; i < times; i++) {
         experiment_args[counter]->n = j;
-        experiment_args[counter]->d = k;
+        experiment_args[counter]->d = m;
         counter++;
       }
 

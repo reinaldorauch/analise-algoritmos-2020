@@ -2,7 +2,7 @@
 
 MAX_N_SIZE=1000000
 MAX_D_SIZE=18
-MAX_RUN_TIMES=100
+MAX_RUN_TIMES=10
 
 echo "Executando o experimento com os argumentos N=$MAX_N_SIZE D=$MAX_D_SIZE repetições=$MAX_RUN_TIMES";
 # Roda o experimento e salva no arquivo data.dat
