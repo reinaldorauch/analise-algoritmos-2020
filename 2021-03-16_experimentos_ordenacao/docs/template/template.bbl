@@ -1,0 +1,16 @@
+\begin{thebibliography}{}
+
+\bibitem[Feofiloff 2018]{radixsort:21}
+Feofiloff, P. (2018).
+\newblock Radixsort.
+\newblock \url{https://www.ime.usp.br/~pf/algoritmos/aulas/radix.html}.
+\newblock Acessado em 02/04/2021.
+
+\bibitem[{The FreeBSD Project} 2013]{quicksort:21}
+{The FreeBSD Project} (2013).
+\newblock {FreeBSD Library Functions Manual: qsort(3)}.
+\newblock
+  \url{https://www.freebsd.org/cgi/man.cgi?query=qsort&sektion=3&manpath=freebsd-release-ports}.
+\newblock Acessado em 02/04/2021.
+
+\end{thebibliography}

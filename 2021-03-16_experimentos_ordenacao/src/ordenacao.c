@@ -143,7 +143,8 @@ int comparador(const void * a, const void * b)
     return 1;
   else if (d < 0)
     return -1;
-  else return 0;
+  else
+    return 0;
 }
 
 
@@ -155,7 +156,7 @@ unsigned long long ordena_por_digitos(char **v, int n, int m)
   double tempo;
 
   t = microtime();
-  ordenacaoDigital (v, n, m);
+  ordenacaoDigital(v, n, m);
   t = microtime() - t;
 
   return t;
@@ -163,7 +164,7 @@ unsigned long long ordena_por_digitos(char **v, int n, int m)
 
 // ordena o vetor v com o qsort() e
 // imprime o tempo de execucao
-unsigned long long quicksort(long long *v, int n, int m)
+unsigned long long quicksort_test(long long *v, int n, int m)
 {
   unsigned long long t;
   double tempo;
@@ -175,71 +176,10 @@ unsigned long long quicksort(long long *v, int n, int m)
   return t;
 }
 
-void merge(long long *vetor, int comeco, int meio, int fim)
-{
-  int com1 = comeco,
-      com2 = meio + 1,
-      comAux = 0,
-      tam = fim - comeco + 1;
-  long long *vetAux = malloc(tam * sizeof(long long));
-
-  while (com1 <= meio && com2 <= fim)
-  {
-    if (vetor[com1] < vetor[com2])
-    {
-      vetAux[comAux] = vetor[com1];
-      com1++;
-    }
-    else
-    {
-      vetAux[comAux] = vetor[com2];
-      com2++;
-    }
-    comAux++;
-  }
-
-  while (com1 <= meio)
-  { //Caso ainda haja elementos na primeira metade
-    vetAux[comAux] = vetor[com1];
-    comAux++;
-    com1++;
-  }
-
-  while (com2 <= fim)
-  { //Caso ainda haja elementos na segunda metade
-    vetAux[comAux] = vetor[com2];
-    comAux++;
-    com2++;
-  }
-
-  for (comAux = comeco; comAux <= fim; comAux++)
-  { //Move os elementos de volta para o vetor original
-    vetor[comAux] = vetAux[comAux - comeco];
-  }
-
-  free(vetAux);
-}
-
-/**
- * Código do merge sort do link:
- * https://pt.wikipedia.org/wiki/Merge_sort#C%C3%B3digo_em_C
- * Acesso em 22/03/2021
- */
-void merge_sort(long long *vetor, int comeco, int fim)
-{
-  if (comeco >= fim) return;
-
-  int meio = (fim + comeco) / 2;
-
-  merge_sort(vetor, comeco, meio);
-  merge_sort(vetor, meio + 1, fim);
-  merge(vetor, comeco, meio, fim);
-}
-
 unsigned long long merge_sort_test(long long *vetor, int n) {
   unsigned long long t = microtime();
   // Argumento fim deve ser dentro do vetor
-  merge_sort(vetor, 0, n - 1);
+  mergesort(vetor, n, sizeof(long long), comparador);
   return microtime() - t;
 }
 
@@ -264,7 +204,7 @@ void run_test_for_n_m(int n, int m)
   }
 
   unsigned long long
-    quicksort_time = quicksort(vi, n, m),
+    quicksort_time = quicksort_test(vi, n, m),
     digisort_time = ordena_por_digitos(v, n, m),
     mergesort_time = merge_sort_test(vi2, n);
 

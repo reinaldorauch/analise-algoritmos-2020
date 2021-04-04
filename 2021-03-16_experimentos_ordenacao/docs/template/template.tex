@@ -12,52 +12,78 @@
 \hypersetup{
     colorlinks=true,
     linkcolor=cyan,
-    filecolor=blue,      
+    filecolor=blue,
     urlcolor=cyan,
     citecolor=cyan,
 }
- 
+
 \sloppy
 
-\title{Análise Experimental entre os algoritmos Quicksort, Radixsort (Ordenação Digital e }
+\title{Análise Experimental entre os algoritmos Quicksort, Radixsort  e Mergesort}
 
 \author{Reinaldo Antonio Camargo Rauch\inst{1}}
 
 
 \address{Universidade Estadual de Ponta Grossa (UEPG)}
 
-\begin{document} 
+\begin{document}
 
 \maketitle
-     
-\begin{resumo} 
-  Este relatório visa comparar o tempo de execução entre os algoritmos Quicksort, Radixsort (Ordenação Digital) e Mergesort. Descobrimos que mesmo o Mergesort tendo um 
+
+\begin{resumo}
+Este relatório visa comparar o tempo de execução entre os algoritmos Quicksort, Radixsort (Ordenação Digital) e Mergesort.
 \end{resumo}
 
 \section{Introdução}
 
-Texto da Introdução.
+Será utilizado uma máquina com as especificações:
 
-\section{Primeira Seção}
+\begin{itemize}
+  \item Processador i7-4790K @ 4 GHz
+  \item Placa Mãe Gigabyte GA-H97M-Gaming 3 (rev 1.0)
+  \item Memória RAM: 16GB
+  \item Sistema Operacional: MacOS Catalina 10.15.7 (Não oficial)
+\end{itemize}
 
-Texto da primeira Seção. Exemplo de citação \cite{knuth:84}.
 
-\subsection{Uma Subseção}
+Ferramentas de compilação:
 
-\subsection{Outra Subseção}
+\begin{itemize}
+  \item XCode 12.4
+  \item Clang 12.0.0
+\end{itemize}
 
-\section{Segunda Seção}
+\section{Algoritmos}
 
-Texto da segunda seção do trabalho.
+Os algoritmos que serão comparados são Quicksort, Radixsort e o Mergesort.
+
+\subsection{Quicksort}
+
+O Quicksort é um algoritmo de divisão e conquista, que encontra o pivô com o método de encontrar a mediana dos valores, de modo a evitar o comportamento $\theta{(n^2)}$, segundo a implementação utilizada na stdlib da linguagem de programação C, a qual os testes serão implementados. Esta implementação é baseada no algoritmo de Hoare de 1962 \cite{quicksort:21}.
+
+\subsection{Radixsort ou Ordenação Digital}
+
+O Radixsort ou Ordenação Digital, é um algoritmo que funciona  \cite{radixsort:21}.
+
+\subsection{Mergesort}
+
+O Mergesort utilizado é a implementação da stdlib do C \cite{radixsort:21}
+
+\section{Experimento}
+
+O experimento foi modelado para rodar com multithreading mas foi detectado que essa configuração afeta a consistência da execução dos tempos dos testes então foi fixado para utilizar somente uma thread de execução.
+
+A variação do N dos expermentos foi definida para iniciar em 100 e ir até 300000 com incrementos também de 100 pois tem uma precisão suficiente para demonstrar o comportamento do tempo de execução dos algoritmos.
+
+\section{Resultados}
 
 \section{Conclusão}
 
-Conclusão. 
+Conclusão.
 
 \bibliographystyle{sbc}
 \bibliography{referencias.bib}
 
 \section*{Anexo}
-
 
 \end{document}
