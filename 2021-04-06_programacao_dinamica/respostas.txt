@@ -1,0 +1,8 @@
+9
+6,42
+
+O aumento do valor do item 1 de 10 para 35, aumenta o valor da solução ótima.
+O valor da solução ótima para o subproblema com os primeiros 5 itens e capacidade 17 é 135.
+O aumento de peso do item 3 de 1 para 2 altera o valor da solução ótima para o problema.
+
+
